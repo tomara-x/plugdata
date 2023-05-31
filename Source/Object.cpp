@@ -1179,8 +1179,24 @@ void Object::openNewObjectEditor()
 
 void Object::textEditorReturnKeyPressed(TextEditor& ed)
 {
-    if (newObjectEditor) {
+    if (newObjectEditor && !ed.getText().contains(" ")) {
         cnv->grabKeyboardFocus();
+    } else {
+        int caretPosition = ed.getCaretPosition();
+        auto text = ed.getText();
+        if (!ed.getHighlightedRegion().isEmpty())
+            return;
+        if (text[caretPosition - 1] == ';') {
+            text = text.substring(0, caretPosition) + "\n" + text.substring(caretPosition);
+            caretPosition += 1;
+        } else {
+            text = text.substring(0, caretPosition) + ";\n" + text.substring(caretPosition);
+            caretPosition += 2;
+        }
+        ed.setText(text);
+        ed.setCaretPosition(caretPosition);
+        cnv->hideSuggestions();
+        setSize(getWidth()-text.substring(0, caretPosition).length(), getHeight()+15); //horror
     }
 }
 
