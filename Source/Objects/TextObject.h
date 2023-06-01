@@ -4,6 +4,7 @@
  // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
  */
 
+
 struct TextObjectHelper {
 
     inline static int minWidth = 3;
@@ -255,8 +256,16 @@ public:
 
     void textEditorReturnKeyPressed(TextEditor& ed) override
     {
-        if (editor != nullptr) {
+        if (editor != nullptr && ed.getText()[ed.getCaretPosition() - 1] != ';') {
             cnv->grabKeyboardFocus();
+        } else {
+            int caretPosition = ed.getCaretPosition();
+            auto text = ed.getText();
+            text = text.substring(0, caretPosition) + "\n" + text.substring(caretPosition);
+            caretPosition += 1;
+            ed.setText(text);
+            ed.setCaretPosition(caretPosition);
+            cnv->hideSuggestions();
         }
     }
 

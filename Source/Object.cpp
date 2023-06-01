@@ -1187,8 +1187,16 @@ void Object::openNewObjectEditor()
 
 void Object::textEditorReturnKeyPressed(TextEditor& ed)
 {
-    if (newObjectEditor) {
+    if (newObjectEditor && ed.getText()[ed.getCaretPosition() - 1] != ';') {
         cnv->grabKeyboardFocus();
+    } else {
+        int caretPosition = ed.getCaretPosition();
+        auto text = ed.getText();
+        text = text.substring(0, caretPosition) + "\n" + text.substring(caretPosition);
+        caretPosition += 1;
+        ed.setText(text);
+        ed.setCaretPosition(caretPosition);
+        cnv->hideSuggestions();
     }
 }
 
@@ -1217,11 +1225,15 @@ void Object::textEditorTextChanged(TextEditor& ed)
     }
 
     // For resize-while-typing behaviour
-    auto width = Font(15).getStringWidth(currentText) + 14.0f;
+    auto lines = StringArray::fromLines(currentText);
+    auto numLines = lines.size() + 1;
+    int w = 14;
+    for (auto& line : lines) {
+        w = std::max<int>(Font(15).getStringWidthFloat(line) + 14.0f, w);
+    }
+    auto width = w + Object::doubleMargin;
 
-    width += Object::doubleMargin;
-
-    setSize(width, getHeight());
+    setSize(width, numLines * 15 + 15);
 }
 
 ComponentBoundsConstrainer* Object::getConstrainer() const
